@@ -1,0 +1,21 @@
+Go script to use Route53 as dynamic DNS provider.
+
+= Requirements =
+* Go
+* Route53 account with setup zone/domain name
+
+= Usage =
+
+Create file with AWS secrets somewhere
+ex:
+{
+    "access_key" : "your access key",
+    "secret_key" : "your secret key"
+}
+
+This implementation is loosely based off https://github.com/dreamins/Route53DDNS-ruby
+This is my first Go lang program so I wouldnt trust it with anything important
+
+= License =
+
+All data (and associated content) is placed in the Public Domain using the Public Domain Dedication and License. All code is licensed under the MIT License.
