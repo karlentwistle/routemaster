@@ -2,6 +2,7 @@ package main
 
 import (
   "testing"
+  "regexp"
   "strings"
 )
 
@@ -14,36 +15,18 @@ var LOCAL_FILE = `routemaster_test.go`
 
 //TODO: Make this test executable when offline
 func TestRawRemoteUrl(t *testing.T) {
-  output := ReadRemoteBody("http://checkip.dyndns.org")
-  if strings.Contains(output, "Current IP Address:") != true {
+  output := ReadRemoteBody("http://example.iana.org/")
+  if strings.Contains(output, "Example Domain") != true {
     t.Fatal("Webpage did not return", output)
   }
 }
 
-func TestParseStringForIP(t *testing.T) {
-  input  := "127.0.0.1"
-  output := ParseStringForIP(input)
-  if output != "127.0.0.1" {
-    t.Fatal("Invalid IP: returned", output) 
-  }
-
-  input  = "Current IP Address: 176.251.76.232"
-  output = ParseStringForIP(input)
-  if output != "176.251.76.232" {
-    t.Fatal("Invalid IP: returned", output) 
-  }
-
-  input  = "<html><head><title>Current IP Check</title></head><body>176.251.76.232</body></html>"
-  output = ParseStringForIP(input)
-  if output != "176.251.76.232" {
-    t.Fatal("Invalid IP: returned", output) 
-  }
-
-  // TODO: Implement a real error framework so we can throw a failure and test it
-  input  = ""
-  output = ParseStringForIP(input)
-  if output != "" {
-    t.Fatal("Invalid IP: returned", output) 
+//TODO: Make this test executable when offline (might not be possible)
+func TestFetchWanIP(t *testing.T) {
+  ipRegex, _ := regexp.Compile(`\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b`)
+  ip := fetchWanIP
+  if ipRegex.MatchString(string(ip())) {
+     t.Fatal("Invalid IP address", ip)
   }
 }
 
@@ -64,8 +47,6 @@ func TestParseAccessIdentifiers(t *testing.T) {
 
 }
 
-// Testing if the contents of a file contains something
-// Using this file as the test case... not sure if this is a good idea
 func TestReadLocalFile(t *testing.T) {
   output := ReadLocalFile(LOCAL_FILE)
   if len(output) < 0 {

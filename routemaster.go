@@ -8,9 +8,10 @@ import (
   "log"
   "encoding/json"
   "flag"
+  "net"
 )
 
-var CHECKIP_URL         = "http://checkip.dyndns.org"
+var CHECKIP_URL         = "http://whatismyip.herokuapp.com/"
 
 type AwsAccessIdentifier struct {
   AccessKey string `json:"access_key"`
@@ -39,6 +40,11 @@ func ParseStringForIP(input string) string {
     return ipAddress  
   } 
   return ""
+}
+
+func fetchWanIP() net.IP {
+  ipAddress := ReadRemoteBody(CHECKIP_URL)
+  return net.ParseIP(ipAddress)
 }
 
 func ReadRemoteBody(url string) string {
