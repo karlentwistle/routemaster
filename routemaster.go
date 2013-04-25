@@ -4,14 +4,13 @@ import (
   "net/http"
   "fmt"
   "io/ioutil"
-  "regexp"
   "log"
   "encoding/json"
   "flag"
   "net"
 )
 
-var CHECKIP_URL         = "http://whatismyip.herokuapp.com/"
+var CHECKIP_URL = "http://whatismyip.herokuapp.com/"
 
 type AwsAccessIdentifier struct {
   AccessKey string `json:"access_key"`
@@ -30,16 +29,6 @@ func ReadLocalFile(location string) string {
     log.Fatal("ReadLocalFile Error:", contents, err)
   }
   return (string(contents))
-}
-
-// TODO: Implement a real error framework so we can throw a failure and test it
-func ParseStringForIP(input string) string {
-  includeRegex, _ := regexp.Compile(`\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b`)
-  var ipAddress = includeRegex.FindString(input)
-  if len(ipAddress) > 0 {
-    return ipAddress  
-  } 
-  return ""
 }
 
 func fetchWanIP() net.IP {
@@ -71,7 +60,6 @@ var aws_secrets *string = flag.String("secrets-file", "", "/path_to/.your_aws_se
 
 func main() {
   flag.Parse()
-  rawWanIP := ReadRemoteBody(CHECKIP_URL)
-  wanIP := ParseStringForIP(rawWanIP)
-  fmt.Println(wanIP)
+  fmt.Println(fetchWanIP())
+  
 }
