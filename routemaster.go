@@ -17,13 +17,13 @@ type AwsAccessIdentifier struct {
   SecretKey string `json:"secret_key"`
 }
 
-func ParseAccessIdentifierJSON(data []byte) (AwsAccessIdentifier, error) {
+func parseAccessIdentifierJSON(data []byte) (AwsAccessIdentifier, error) {
   var accessIdentifier AwsAccessIdentifier
   err := json.Unmarshal(data, &accessIdentifier)
   return accessIdentifier, err
 }
 
-func ReadLocalFile(location string) string {
+func readLocalFile(location string) string {
   contents, err := ioutil.ReadFile(location)
   if err != nil {
     log.Fatal("ReadLocalFile Error:", contents, err)
@@ -31,35 +31,31 @@ func ReadLocalFile(location string) string {
   return (string(contents))
 }
 
-func fetchWanIP() net.IP {
-  ipAddress := ReadRemoteBody(CHECKIP_URL)
-  return net.ParseIP(ipAddress)
+func getWanIP(url string) (net.IP, error) {
+  resp, err := getBody(url)
+  if err == nil {
+    return net.ParseIP(string(resp)), nil  
+  }
+  return nil, err
 }
 
-func ReadRemoteBody(url string) string {
-  resp, err := http.Get(url)
-  defer resp.Body.Close()
-
-  if err != nil {
-    log.Fatal("Error:", url, err)
-  }
-
-  if resp.StatusCode == 200 {
-    bodyBytes, err := ioutil.ReadAll(resp.Body)
-    bodyString := string(bodyBytes)
-    if err != nil {
-      log.Fatal("Error unable to read webpage content", err)
+func getBody(url string) ([]byte, error) {
+  client := &http.Client{}
+  req, err := http.NewRequest("GET", url, nil)
+  if err == nil {
+    resp, err := client.Do(req)
+    defer resp.Body.Close()
+    if err == nil {
+      return ioutil.ReadAll(resp.Body)
     }
-    return bodyString
   }
-  log.Fatal("Error unable to read webpage content") 
-  return ""
+  return nil, err
 }
 
 var aws_secrets *string = flag.String("secrets-file", "", "/path_to/.your_aws_secrets")
 
 func main() {
   flag.Parse()
-  fmt.Println(fetchWanIP())
+  fmt.Println(getWanIP(CHECKIP_URL))
   
 }

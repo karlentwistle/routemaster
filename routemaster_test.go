@@ -1,9 +1,11 @@
 package main
 
 import (
+  "io"
   "testing"
-  "regexp"
   "strings"
+  "net/http"
+  "net/http/httptest"
 )
 
 var ACCESS_IDENTIFIERS = `{
@@ -13,25 +15,45 @@ var ACCESS_IDENTIFIERS = `{
 
 var LOCAL_FILE = `routemaster_test.go`
 
-//TODO: Make this test executable when offline
+
+type emptyHandler struct{}
+
+func (h *emptyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+  w.Header().Set("Test-Header", "Testing")
+  io.WriteString(w, "127.0.0.1")
+}
+
+
 func TestRawRemoteUrl(t *testing.T) {
-  output := ReadRemoteBody("http://example.iana.org/")
-  if strings.Contains(output, "Example Domain") != true {
-    t.Fatal("Webpage did not return", output)
+  handler := &emptyHandler{}
+  server := httptest.NewServer(handler)
+  resp, err := getBody(server.URL)
+
+  if err != nil {
+    t.Fatal("Error:", err)
+  }
+
+  if strings.Contains(string(resp), "127.0.0.1") != true {
+    t.Fatal("Webpage did not return", resp)
   }
 }
 
-//TODO: Make this test executable when offline (might not be possible)
-func TestFetchWanIP(t *testing.T) {
-  ipRegex, _ := regexp.Compile(`\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b`)
-  ip := fetchWanIP
-  if ipRegex.MatchString(string(ip())) {
-     t.Fatal("Invalid IP address", ip)
+func TestGetWanIP(t *testing.T) {
+  handler := &emptyHandler{}
+  server := httptest.NewServer(handler)
+  ip, err := getWanIP(server.URL)
+
+  if err != nil {
+    t.Fatal("Error:", err)
+  } 
+
+  if ip.String() != "127.0.0.1" {
+    t.Fatal("Invalid IP address", ip)
   }
 }
 
 func TestParseAccessIdentifiers(t *testing.T) {
-  accessIdentifier, error := ParseAccessIdentifierJSON([]byte(ACCESS_IDENTIFIERS))
+  accessIdentifier, error := parseAccessIdentifierJSON([]byte(ACCESS_IDENTIFIERS))
 
   if error != nil {
     t.Fatalf("error parsing JSON", accessIdentifier, error)
@@ -48,7 +70,7 @@ func TestParseAccessIdentifiers(t *testing.T) {
 }
 
 func TestReadLocalFile(t *testing.T) {
-  output := ReadLocalFile(LOCAL_FILE)
+  output := readLocalFile(LOCAL_FILE)
   if len(output) < 0 {
     t.Fatalf("Unable to read contents of file")
   }
