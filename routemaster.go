@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"route53"
 )
 
@@ -124,7 +125,8 @@ func main() {
 
 	if record.Name == "" {
 		updateRecord(zone, aws, "CREATE", *subdomain+"."+*hosted_zone, wanIP.String())
-		log.Fatal("A record with name " + *subdomain + " was not found, created")
+		fmt.Println("Created A record with name ", *subdomain)
+		os.Exit(1)
 	}
 
 	fmt.Println("IP was " + record.Value[0])
