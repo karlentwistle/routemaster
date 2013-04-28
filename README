@@ -18,6 +18,22 @@ ex:
 This implementation is loosely based off https://github.com/dreamins/Route53DDNS-ruby
 This is my first Go lang program so I wouldnt trust it with anything important
 
+= TODO =
+
+Refactor main method
+Add tests
+Support zone without subdomain
+Better Error Handling
+Add 2nd Host Grabbing IP Address
+
+= Contributing =
+
+Fork it
+Create your feature branch (git checkout -b my-new-feature)
+Commit your changes (git commit -am 'Added some feature')
+Push to the branch (git push origin my-new-feature)
+Create new Pull Request
+
 = License =
 
-All data (and associated content) is placed in the Public Domain using the Public Domain Dedication and License. All code is licensed under the MIT License.
+Please see the included LICENSE.txt file.
