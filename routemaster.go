@@ -68,34 +68,34 @@ func findZone(zones route53.HostedZones) (hz route53.HostedZone) {
 
 //TODO add test
 func findRecord(records route53.ResourceRecordSets) (rrs route53.ResourceRecordSet) {
-  for i := range records.ResourceRecordSets {
-    if records.ResourceRecordSets[i].Name == *subdomain + "." + *hosted_zone {
-      return records.ResourceRecordSets[i]
-    }
-  }
-  return rrs
+	for i := range records.ResourceRecordSets {
+		if records.ResourceRecordSets[i].Name == *subdomain+"."+*hosted_zone {
+			return records.ResourceRecordSets[i]
+		}
+	}
+	return rrs
 }
 
 func updateRecord(zone route53.HostedZone, aws route53.AccessIdentifiers, action string, name string, value string) {
-  var create = route53.ChangeResourceRecordSetsRequest{
-    ZoneID: zone.HostedZoneId(),
-    Comment: "",
-    Changes: []route53.Change{
-      {
-        Action:        action,
-        Name:          name,
-        Type:          "A",
-        TTL:           300,
-        Value:         value,
-      },
-    },
-  }
+	var create = route53.ChangeResourceRecordSetsRequest{
+		ZoneID:  zone.HostedZoneId(),
+		Comment: "",
+		Changes: []route53.Change{
+			{
+				Action: action,
+				Name:   name,
+				Type:   "A",
+				TTL:    300,
+				Value:  value,
+			},
+		},
+	}
 
-  r, err := create.Create(aws)
+	r, err := create.Create(aws)
 
-  if err != nil {
-    log.Fatal("Update record failed:", r, err)
-  }
+	if err != nil {
+		log.Fatal("Update record failed:", r, err)
+	}
 }
 
 var aws_secrets *string = flag.String("secrets-file", "", "/path_to/.your_aws_secrets")
@@ -104,37 +104,37 @@ var subdomain *string = flag.String("subdomain", "", "[your subdomain]")
 
 func main() {
 	flag.Parse()
-  wanIP, err := getWanIP(CHECKIP_URL)
+	wanIP, err := getWanIP(CHECKIP_URL)
 
-  if err != nil {
-    log.Fatal("Failed to fetch current IP:", err)
-  }
+	if err != nil {
+		log.Fatal("Failed to fetch current IP:", err)
+	}
 
-  fmt.Println("IP is " + wanIP.String())
+	fmt.Println("IP is " + wanIP.String())
 	contents, _ := readLocalFile(*aws_secrets)
 	aws, _ := parseAccessIdentifierJSON(contents)
 	zone := findZone(aws.Zones())
 	resourceRecordSets, err := zone.ResourceRecordSets(aws)
 
-  if err != nil {
-    log.Fatal("Resource Record Sets Invalid:", resourceRecordSets, err)
-  }
+	if err != nil {
+		log.Fatal("Resource Record Sets Invalid:", resourceRecordSets, err)
+	}
 
 	record := findRecord(resourceRecordSets)
 
-  if record.Name == "" {
-    updateRecord(zone, aws, "CREATE", *subdomain + "." + *hosted_zone, wanIP.String())
-    log.Fatal("A record with name " + *subdomain +" was not found, created")    
-  } 
+	if record.Name == "" {
+		updateRecord(zone, aws, "CREATE", *subdomain+"."+*hosted_zone, wanIP.String())
+		log.Fatal("A record with name " + *subdomain + " was not found, created")
+	}
 
-  fmt.Println("IP was " + record.Value[0] )
+	fmt.Println("IP was " + record.Value[0])
 
-  if record.Value[0] == wanIP.String() {
-    log.Fatal("Nothing to do")
-  }
+	if record.Value[0] == wanIP.String() {
+		log.Fatal("Nothing to do")
+	}
 
-  fmt.Println("Updating IP with Route53")
-  updateRecord(zone, aws, "DELETE", *subdomain + "." + *hosted_zone, record.Value[0])
-  updateRecord(zone, aws, "CREATE", *subdomain + "." + *hosted_zone, wanIP.String())
-  fmt.Println("Done")
+	fmt.Println("Updating IP with Route53")
+	updateRecord(zone, aws, "DELETE", *subdomain+"."+*hosted_zone, record.Value[0])
+	updateRecord(zone, aws, "CREATE", *subdomain+"."+*hosted_zone, wanIP.String())
+	fmt.Println("Done")
 }

@@ -13,6 +13,8 @@ ex:
     "secret_key" : "your secret key"
 }
 
+./routemaster -hosted-zone="example.com." -secrets-file=/Users/karl/.aws_secret -subdomain="subdomain"
+
 This implementation is loosely based off https://github.com/dreamins/Route53DDNS-ruby
 This is my first Go lang program so I wouldnt trust it with anything important
 
