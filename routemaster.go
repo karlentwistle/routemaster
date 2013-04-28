@@ -132,7 +132,8 @@ func main() {
 	fmt.Println("IP was " + record.Value[0])
 
 	if record.Value[0] == wanIP.String() {
-		log.Fatal("Nothing to do")
+    fmt.Println("Nothing to do")
+		os.Exit(1)
 	}
 
 	fmt.Println("Updating IP with Route53")
