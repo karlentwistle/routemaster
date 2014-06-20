@@ -9,7 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"route53"
+	"github.com/karlentwistle/route53"
 )
 
 var CHECKIP_URL = "http://whatismyip.herokuapp.com/"
