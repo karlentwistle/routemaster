@@ -8,8 +8,8 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
 	"github.com/karlentwistle/route53"
+	"time"
 )
 
 var CHECKIP_URL = "http://whatismyip.herokuapp.com/"
@@ -99,12 +99,13 @@ func updateRecord(zone route53.HostedZone, aws route53.AccessIdentifiers, action
 	}
 }
 
+
 var aws_secrets *string = flag.String("secrets-file", "", "/path_to/.your_aws_secrets")
 var hosted_zone *string = flag.String("hosted-zone", "", "[your hosted zone]")
 var subdomain *string = flag.String("subdomain", "", "[your subdomain]")
+var update_frequency = flag.Int("update_frequency", 60, "[update_frequency]")
 
-func main() {
-	flag.Parse()
+func update() {
 	wanIP, err := getWanIP(CHECKIP_URL)
 
 	if err != nil {
@@ -126,18 +127,29 @@ func main() {
 	if record.Name == "" {
 		updateRecord(zone, aws, "CREATE", *subdomain+"."+*hosted_zone, wanIP.String())
 		fmt.Println("Created A record with name ", *subdomain)
-		os.Exit(1)
+		return
 	}
 
 	fmt.Println("IP was " + record.Value[0])
 
 	if record.Value[0] == wanIP.String() {
     fmt.Println("Nothing to do")
-		os.Exit(1)
+    return
 	}
 
 	fmt.Println("Updating IP with Route53")
 	updateRecord(zone, aws, "DELETE", *subdomain+"."+*hosted_zone, record.Value[0])
 	updateRecord(zone, aws, "CREATE", *subdomain+"."+*hosted_zone, wanIP.String())
 	fmt.Println("Done")
+}
+
+func main() {
+	flag.Parse()
+
+	for {
+		update()
+
+		time.Sleep(time.Duration(*update_frequency) * time.Second)
+	}
+
 }
